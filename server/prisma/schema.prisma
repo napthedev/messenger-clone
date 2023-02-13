@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String               @id @default(uuid())
+  username           String               @unique
+  avatar             String?
+  userOnConversation UserOnConversation[]
+  messages           Message[]
+}
+
+model Conversation {
+  id                 String               @id @default(uuid())
+  userOnConversation UserOnConversation[]
+  messages           Message[]
+}
+
+model UserOnConversation {
+  userId         String
+  user           User         @relation(references: [id], fields: [userId])
+  conversationId String
+  conversation   Conversation @relation(references: [id], fields: [conversationId])
+
+  @@id([userId])
+}
+
+model Message {
+  id      String @id @default(uuid())
+  type    String
+  content String
+
+  userId         String
+  user           User         @relation(references: [id], fields: [userId])
+  conversationId String
+  conversation   Conversation @relation(references: [id], fields: [conversationId])
+}

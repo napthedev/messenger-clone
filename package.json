@@ -1,0 +1,30 @@
+{
+  "name": "messenger-clone",
+  "version": "1.0.0",
+  "workspaces": {
+    "packages": [
+      "mobile",
+      "server"
+    ],
+    "nohoist": [
+      "*",
+      "**/*"
+    ]
+  },
+  "scripts": {
+    "dev": "concurrently -i -r \"npm run server\" \"npm run mobile\"",
+    "server": "npm run dev --prefix server",
+    "mobile": "npm start --prefix mobile"
+  },
+  "keywords": [],
+  "author": "napthedev",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^7.6.0"
+  },
+  "private": true,
+  "devDependencies": {
+    "eslint": "^8.34.0",
+    "eslint-plugin-simple-import-sort": "^10.0.0"
+  }
+}
