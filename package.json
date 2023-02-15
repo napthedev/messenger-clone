@@ -13,7 +13,7 @@
   },
   "scripts": {
     "dev": "concurrently -i -r \"npm run server\" \"npm run mobile\"",
-    "server": "npm run dev --prefix server",
+    "server": "npm run start:dev --prefix server",
     "mobile": "npm start --prefix mobile"
   },
   "keywords": [],
