@@ -13,6 +13,6 @@ export class AuthController {
 
   @Get('verify-token')
   async verifyToken(@Request() req) {
-    return req.user;
+    return { user: req.user };
   }
 }

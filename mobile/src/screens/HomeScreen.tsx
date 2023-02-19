@@ -1,6 +1,7 @@
-import { FC } from "react";
 import { useNavigation } from "@react-navigation/native";
+import { FC } from "react";
 import { Button, Text } from "react-native";
+
 import { NavigationProps } from "../../App";
 
 const HomeScreen: FC = () => {

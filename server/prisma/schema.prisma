@@ -15,6 +15,7 @@ model User {
   username           String               @unique
   password           String
   avatar             String?
+  displayName        String
   userOnConversation UserOnConversation[]
   messages           Message[]
 }
