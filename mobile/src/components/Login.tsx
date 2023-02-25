@@ -1,209 +1,114 @@
-import { FC, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ResponseType } from "expo-auth-session";
+import * as Facebook from "expo-auth-session/providers/facebook";
+import Constants from "expo-constants";
+import * as WebBrowser from "expo-web-browser";
+import { FC, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
   SafeAreaView,
   Text,
-  TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
 
-import { removeAccents } from "../utils/text";
+import axios from "../services/axios";
+import { useStore } from "../store";
+
+WebBrowser.maybeCompleteAuthSession();
 
 const Login: FC = () => {
-  const [errorMessage, setErrorMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { setUser } = useStore();
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    defaultValues: {
-      displayName: "",
-      username: "",
-      password: "",
-    },
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  const [request, response, promptAsync] = Facebook.useAuthRequest({
+    clientId: Constants.manifest.extra.facebookAppId,
+    expoClientId: Constants.manifest.extra.facebookAppId,
+    responseType: ResponseType.Token,
+    scopes: ["email", "public_profile"],
   });
-  const onSubmit = (data: { username: string; password: string }) => {
-    // setIsLoading(true);
-    // setErrorMessage("");
-    // signInOrRegister(data.username, data.password)
-    //   .then(async ({ token }) => {
-    //     await AsyncStorage.setItem("token", token);
-    //     setUsername(data.username);
-    //   })
-    //   .catch((err) => {
-    //     setErrorMessage(err?.response?.data?.message || "Something went wrong");
-    //   })
-    //   .finally(() => {
-    //     setIsLoading(false);
-    //   });
-  };
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      const accessToken = response.authentication.accessToken;
+      setIsLoggingIn(true);
+      axios
+        .post("/auth/login-or-register", { token: accessToken })
+        .then(async (res) => {
+          const jwtToken = res.data.token;
+          await AsyncStorage.setItem("token", jwtToken);
+          const { user } = (await axios.get("/auth/verify-token")).data;
+          setUser(user);
+        })
+        .catch((error) => {
+          setErrorMessage(
+            error.response?.data?.message || "Something went wrong"
+          );
+        });
+    }
+  }, [response, setUser]);
 
   return (
-    <SafeAreaView className="bg-dark flex-1">
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        <TouchableWithoutFeedback
-          className="flex-1 items-center justify-center"
-          onPress={Keyboard.dismiss}
+    <SafeAreaView className="bg-dark flex-1 items-stretch justify-center">
+      <View className="flex-1 items-center justify-center px-5">
+        <Image
+          className="h-[140px] w-[140px] mb-[40px]"
+          source={require("../../assets/messenger.png")}
+        />
+        <Text className="text-white text-[28px] text-center font-bold">
+          Log in or register
+        </Text>
+        <Text className="text-white text-[28px] text-center font-bold">
+          with Facebook
+        </Text>
+
+        <TouchableOpacity
+          activeOpacity={0.8}
+          className={`w-full mt-[40px] bg-primary rounded-md h-12 flex-row items-center ${
+            isLoggingIn || !request ? "opacity-80" : ""
+          }`}
+          onPress={() => promptAsync()}
+          disabled={isLoggingIn || !request}
         >
-          <View className="items-center justify-center flex-1 px-5">
+          {isLoggingIn ? (
+            <ActivityIndicator className="pl-3" color="#ffffff" />
+          ) : (
             <Image
-              className="h-[140px] w-[140px] mt-[60px] mb-[40px]"
-              source={require("../../assets/messenger.png")}
+              className="w-[35px] h-[35px] ml-2"
+              source={require("../../assets/facebook-white.png")}
             />
-            <Text className="text-white text-[28px] text-center font-bold">
-              Log in or register with an username and password
+          )}
+          <View className="flex-1 flex-row justify-center items-center">
+            <Text className="text-white text-center text-xl">
+              Continue with Facebook
             </Text>
-
-            <Controller
-              control={control}
-              rules={{
-                required: {
-                  message: "Your display name is required",
-                  value: true,
-                },
-                minLength: {
-                  message: "Must be at least 6 characters",
-                  value: 6,
-                },
-                maxLength: {
-                  message: "Must not be more than 64 characters",
-                  value: 64,
-                },
-                validate: {
-                  valid: (v) =>
-                    /^[a-zA-Z ]*$/gm.test(removeAccents(v)) ||
-                    "Display name must contain only characters and spaces",
-                },
-              }}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <View className="w-full mt-5">
-                  <TextInput
-                    className="w-full bg-dark-lightened rounded-lg px-3 text-[18px] h-[48px] text-white"
-                    placeholderTextColor="#929297"
-                    placeholder="Display Name"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    onSubmitEditing={handleSubmit(onSubmit)}
-                  />
-                </View>
-              )}
-              name="displayName"
-            />
-            {errors.displayName && (
-              <Text className="text-red-500 mt-2 mb-1">
-                {errors.displayName.message}
-              </Text>
-            )}
-
-            <Controller
-              control={control}
-              rules={{
-                required: { message: "Your username is required", value: true },
-                minLength: {
-                  message: "Must be at least 6 characters",
-                  value: 6,
-                },
-                maxLength: {
-                  message: "Must not be more than 18 characters",
-                  value: 18,
-                },
-                pattern: {
-                  message: "Username must not contain space",
-                  value: /^[^\s]+$/gm,
-                },
-              }}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <View className="w-full mt-2">
-                  <TextInput
-                    className="w-full bg-dark-lightened rounded-lg px-3 text-[18px] h-[48px] text-white"
-                    placeholderTextColor="#929297"
-                    placeholder="Username"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    onSubmitEditing={handleSubmit(onSubmit)}
-                    autoCapitalize="none"
-                  />
-                </View>
-              )}
-              name="username"
-            />
-            {errors.username && (
-              <Text className="text-red-500 mt-2 mb-1">
-                {errors.username.message}
-              </Text>
-            )}
-
-            <Controller
-              control={control}
-              rules={{
-                required: { message: "Your password is required", value: true },
-                minLength: {
-                  message: "Must be at least 6 characters",
-                  value: 6,
-                },
-                maxLength: {
-                  message: "Must not be more than 18 characters",
-                  value: 18,
-                },
-              }}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <View className="w-full mt-2">
-                  <TextInput
-                    className="w-full bg-dark-lightened rounded-lg px-3 text-[18px] h-[48px] text-white"
-                    placeholderTextColor="#929297"
-                    placeholder="Password"
-                    secureTextEntry
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    onSubmitEditing={handleSubmit(onSubmit)}
-                    autoCapitalize="none"
-                  />
-                </View>
-              )}
-              name="password"
-            />
-
-            {errors.password && (
-              <Text className="text-red-500 mt-2 mb-1">
-                {errors.password.message}
-              </Text>
-            )}
-
-            <TouchableOpacity
-              activeOpacity={0.7}
-              className="w-full mt-2 bg-blue rounded-md h-11 justify-center items-center"
-              onPress={handleSubmit(onSubmit)}
-            >
-              {isLoading ? (
-                <ActivityIndicator />
-              ) : (
-                <Text className="text-white text-center text-xl">
-                  Sign in or register
-                </Text>
-              )}
-            </TouchableOpacity>
-
-            {errorMessage && (
-              <Text className="text-red-500 mt-2 text-lg">{errorMessage}</Text>
-            )}
           </View>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
+        </TouchableOpacity>
+
+        {!!errorMessage ? (
+          <Text className="text-red-500 mt-2 text-lg">{errorMessage}</Text>
+        ) : typeof response?.type !== "undefined" &&
+          response?.type !== "success" ? (
+          <Text className="text-red-500 mt-2 text-lg">
+            {response?.type === "cancel"
+              ? "Login canceled"
+              : response?.type === "dismiss"
+              ? "Login dismissed"
+              : response?.type === "error"
+              ? response?.error.message || "Error when login"
+              : response?.type === "locked"
+              ? "Login locked"
+              : response?.type === "opened"
+              ? "Login opened"
+              : "Something went wrong"}
+          </Text>
+        ) : (
+          <></>
+        )}
+      </View>
     </SafeAreaView>
   );
 };

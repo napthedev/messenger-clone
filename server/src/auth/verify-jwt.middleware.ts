@@ -20,11 +20,7 @@ export class VerifyJWTMiddleware implements NestMiddleware {
         process.env.PRIVATE_KEY!,
       ) as any;
 
-      req.user = {
-        id: user.id,
-        username: user.username,
-        avatar: user.avatar,
-      };
+      req.user = user;
       next();
     } catch (error) {
       throw new HttpException({ message: 'Forbidden' }, HttpStatus.FORBIDDEN);

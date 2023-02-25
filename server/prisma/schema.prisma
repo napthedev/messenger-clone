@@ -11,11 +11,10 @@ datasource db {
 }
 
 model User {
-  id                 String               @id @default(uuid())
-  username           String               @unique
-  password           String
-  avatar             String?
-  displayName        String
+  id                 String               @id
+  name               String
+  email              String?
+  picture            String?
   userOnConversation UserOnConversation[]
   messages           Message[]
 }

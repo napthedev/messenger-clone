@@ -1,43 +1,50 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { LoginOrRegisterDto } from './dto/login-or-register.dto';
-import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
+import axios from 'axios';
 
 @Injectable()
 export class AuthService {
   constructor(private prisma: PrismaService) {}
 
   async loginOrRegister(body: LoginOrRegisterDto) {
+    const response = (
+      await axios.get(
+        `https://graph.facebook.com/me?access_token=${body.token}&fields=id,name,email,picture.width(200).height(200)`,
+      )
+    ).data as {
+      id: string;
+      name: string;
+      email?: string;
+      picture: {
+        data: {
+          height: number;
+          is_silhouette: boolean;
+          url?: string;
+          width: number;
+        };
+      };
+    };
+
     const existingUser = await this.prisma.user.findFirst({
-      where: { username: body.username },
+      where: { id: response.id },
 
       select: {
         id: true,
-        username: true,
-        avatar: true,
-        password: true,
+        name: true,
+        email: true,
+        picture: true,
       },
     });
 
     if (existingUser) {
-      const isValidPassword = await bcrypt.compare(
-        body.password,
-        existingUser.password,
-      );
-
-      if (!isValidPassword) {
-        throw new HttpException(
-          { message: 'Your password is incorrect' },
-          HttpStatus.FORBIDDEN,
-        );
-      }
-
       const token = jwt.sign(
         {
           id: existingUser.id,
-          username: existingUser.username,
-          avatar: existingUser.avatar,
+          name: existingUser.name,
+          email: existingUser.email,
+          picture: existingUser.picture,
         },
         process.env.PRIVATE_KEY!,
       );
@@ -46,25 +53,21 @@ export class AuthService {
         token,
       };
     } else {
-      const hashedPassword = await bcrypt.hash(body.password, 10);
-
-      const created = await this.prisma.user.create({
+      await this.prisma.user.create({
         data: {
-          username: body.username,
-          password: hashedPassword,
-        },
-        select: {
-          id: true,
-          username: true,
-          avatar: true,
+          id: response.id,
+          email: response.email,
+          name: response.name,
+          picture: response?.picture?.data?.url,
         },
       });
 
       const token = jwt.sign(
         {
-          id: created.id,
-          username: created.username,
-          avatar: created.avatar,
+          id: response.id,
+          email: response.email,
+          name: response.name,
+          picture: response.picture.data.url,
         },
         process.env.PRIVATE_KEY!,
       );
