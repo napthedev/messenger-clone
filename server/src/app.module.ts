@@ -20,7 +20,7 @@ export class AppModule {
       .forRoutes({ path: '/auth/verify-token', method: RequestMethod.GET })
       .apply(VerifyJWTMiddleware)
       .forRoutes({
-        path: '/user/all-users-except-me',
+        path: '/user/all-users-except-current',
         method: RequestMethod.GET,
       });
   }

@@ -16,22 +16,20 @@ export class ConversationService {
   }
 
   async conversationsFromUsers(userIds: string[]) {
-    return (
-      await this.prisma.conversation.findMany({
-        where: {
-          userOnConversation: { every: { userId: { in: userIds } } },
-        },
-        select: {
-          id: true,
-          userOnConversation: {
-            select: {
-              user: {
-                select: { id: true, email: true, name: true, picture: true },
-              },
+    return await this.prisma.conversation.findFirst({
+      where: {
+        userOnConversation: { every: { userId: { in: userIds } } },
+      },
+      select: {
+        id: true,
+        userOnConversation: {
+          select: {
+            user: {
+              select: { id: true, email: true, name: true, picture: true },
             },
           },
         },
-      })
-    ).filter((item) => item.userOnConversation.length === userIds.length);
+      },
+    });
   }
 }

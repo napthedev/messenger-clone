@@ -1,13 +1,13 @@
+import { Ionicons } from "@expo/vector-icons";
 import { DarkTheme, NavigationContainer } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
-import LeftButton from "./src/components/LeftButton";
 import Login from "./src/components/Login";
-import RightButton from "./src/components/RightButton";
 import ChatScreen from "./src/screens/ChatScreen";
 import CreateConversationScreen from "./src/screens/CreateConversationScreen";
 import HomeScreen from "./src/screens/HomeScreen";
@@ -25,8 +25,10 @@ export type RootStackParamList = {
 };
 export type NavigationProps = NativeStackNavigationProp<RootStackParamList>;
 
+const queryClient = new QueryClient();
+
 export default function App() {
-  const { user, setUser } = useStore();
+  const { user, setUser, isModalOpened } = useStore();
 
   useEffect(() => {
     (async () => {
@@ -41,54 +43,98 @@ export default function App() {
   }, [setUser]);
 
   return (
-    <View className="flex-1">
-      {typeof user === "undefined" ? (
-        <View className="flex-1 justify-center items-center bg-dark">
-          <ActivityIndicator />
-        </View>
-      ) : !user ? (
-        <Login />
-      ) : (
-        <NavigationContainer
-          theme={{
-            dark: true,
-            colors: {
-              ...DarkTheme.colors,
-              background: "#000000",
-              card: "#000000",
-              primary: "#2374E1",
-            },
-          }}
-        >
-          <Stack.Navigator initialRouteName="Home">
-            <Stack.Group>
-              <Stack.Screen
-                name="Home"
-                component={HomeScreen}
-                options={{
-                  title: "Chats",
-                  headerTitleStyle: { fontSize: 20, fontWeight: "700" },
-                  headerLeft: (props) => <LeftButton {...props} />,
-                  headerRight: (props) => <RightButton {...props} />,
-                }}
-              />
-              <Stack.Screen name="Chat" component={ChatScreen} />
-            </Stack.Group>
-            <Stack.Group
-              screenOptions={{
-                presentation: "modal",
-              }}
+    <QueryClientProvider client={queryClient}>
+      <View className="flex-1">
+        {typeof user === "undefined" ? (
+          <View className="flex-1 justify-center items-center bg-dark">
+            <ActivityIndicator />
+          </View>
+        ) : !user ? (
+          <Login />
+        ) : (
+          <NavigationContainer
+            theme={{
+              dark: true,
+              colors: {
+                ...DarkTheme.colors,
+                background: "#000000",
+                card: "#000000",
+                primary: "#2374E1",
+              },
+            }}
+          >
+            <Stack.Navigator
+              initialRouteName="Home"
+              {...(isModalOpened
+                ? {
+                    screenOptions: {
+                      headerStyle: { backgroundColor: "#181818" },
+                    },
+                  }
+                : {})}
             >
-              <Stack.Screen
-                name="CreateConversation"
-                component={CreateConversationScreen}
-              />
-              <Stack.Screen name="Settings" component={SettingsScreen} />
-            </Stack.Group>
-          </Stack.Navigator>
-        </NavigationContainer>
-      )}
-      <StatusBar style="light" />
-    </View>
+              <Stack.Group>
+                <Stack.Screen
+                  name="Home"
+                  component={HomeScreen}
+                  options={({ navigation }) => ({
+                    title: "Chats",
+                    headerTitleStyle: { fontSize: 20, fontWeight: "700" },
+                    headerLeft: (props) => (
+                      <TouchableOpacity
+                        onPress={() => navigation.navigate("Settings")}
+                      >
+                        <Ionicons
+                          name="settings-outline"
+                          size={24}
+                          color={props.tintColor}
+                        />
+                      </TouchableOpacity>
+                    ),
+                    headerRight: (props) => (
+                      <TouchableOpacity
+                        onPress={() =>
+                          navigation.navigate("CreateConversation")
+                        }
+                      >
+                        <Ionicons
+                          name="md-create-outline"
+                          size={28}
+                          color={props.tintColor}
+                        />
+                      </TouchableOpacity>
+                    ),
+                  })}
+                />
+                <Stack.Screen name="Chat" component={ChatScreen} />
+              </Stack.Group>
+              <Stack.Group
+                screenOptions={{
+                  presentation: "modal",
+                  gestureEnabled: true,
+                  headerStyle: { backgroundColor: "#000000" },
+                }}
+              >
+                <Stack.Screen
+                  name="CreateConversation"
+                  component={CreateConversationScreen}
+                  options={({ navigation }) => ({
+                    headerLeft: () => (
+                      <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <Text className="text-primary text-[18px]">Cancel</Text>
+                      </TouchableOpacity>
+                    ),
+                    headerTitle: "New message",
+                    headerStyle: { backgroundColor: "#222222" },
+                  })}
+                />
+                <Stack.Screen name="Settings" component={SettingsScreen} />
+              </Stack.Group>
+            </Stack.Navigator>
+          </NavigationContainer>
+        )}
+        <StatusBar style="light" />
+      </View>
+    </QueryClientProvider>
   );
 }
