@@ -19,7 +19,9 @@ const Stack = createNativeStackNavigator();
 
 export type RootStackParamList = {
   Home: {};
-  Chat: {};
+  Chat: {
+    conversationId: string;
+  };
   CreateConversation: {};
   Settings: {};
 };

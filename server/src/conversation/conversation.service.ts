@@ -6,30 +6,43 @@ export class ConversationService {
   constructor(private prisma: PrismaService) {}
 
   async createConversation(userIds: string[]) {
-    return await this.prisma.conversation.create({
-      data: {
-        userOnConversation: {
-          createMany: { data: userIds.map((id) => ({ userId: id })) },
-        },
-      },
-    });
-  }
-
-  async conversationsFromUsers(userIds: string[]) {
-    return await this.prisma.conversation.findFirst({
-      where: {
-        userOnConversation: { every: { userId: { in: userIds } } },
-      },
-      select: {
-        id: true,
-        userOnConversation: {
+    try {
+      const existingConversation =
+        await this.prisma.conversation.findFirstOrThrow({
+          where: {
+            userOnConversation: { every: { userId: { in: userIds } } },
+          },
           select: {
-            user: {
-              select: { id: true, email: true, name: true, picture: true },
+            id: true,
+            userOnConversation: {
+              select: {
+                user: {
+                  select: { id: true, email: true, name: true, picture: true },
+                },
+              },
+            },
+          },
+        });
+      return existingConversation;
+    } catch (error) {
+      const newConversation = await this.prisma.conversation.create({
+        data: {
+          userOnConversation: {
+            createMany: { data: userIds.map((id) => ({ userId: id })) },
+          },
+        },
+        select: {
+          id: true,
+          userOnConversation: {
+            select: {
+              user: {
+                select: { id: true, email: true, name: true, picture: true },
+              },
             },
           },
         },
-      },
-    });
+      });
+      return newConversation;
+    }
   }
 }

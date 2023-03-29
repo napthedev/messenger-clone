@@ -22,6 +22,11 @@ export class AppModule {
       .forRoutes({
         path: '/user/all-users-except-current',
         method: RequestMethod.GET,
+      })
+      .apply(VerifyJWTMiddleware)
+      .forRoutes({
+        path: '/conversation/create',
+        method: RequestMethod.POST,
       });
   }
 }

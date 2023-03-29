@@ -6,12 +6,12 @@ generator client {
 }
 
 datasource db {
-  provider = "cockroachdb"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id                 String               @id
+  id                 String               @id @map("_id")
   name               String
   email              String?
   picture            String?
@@ -20,22 +20,21 @@ model User {
 }
 
 model Conversation {
-  id                 String               @id @default(uuid())
+  id                 String               @id @default(uuid()) @map("_id")
   userOnConversation UserOnConversation[]
   messages           Message[]
 }
 
 model UserOnConversation {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
   userId         String
   user           User         @relation(references: [id], fields: [userId])
   conversationId String
   conversation   Conversation @relation(references: [id], fields: [conversationId])
-
-  @@id([userId])
 }
 
 model Message {
-  id      String @id @default(uuid())
+  id      String @id @default(uuid()) @map("_id")
   type    String
   content String
 

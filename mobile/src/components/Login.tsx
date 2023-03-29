@@ -47,6 +47,9 @@ const Login: FC = () => {
           setErrorMessage(
             error.response?.data?.message || "Something went wrong"
           );
+        })
+        .finally(() => {
+          setIsLoggingIn(false);
         });
     }
   }, [response, setUser]);

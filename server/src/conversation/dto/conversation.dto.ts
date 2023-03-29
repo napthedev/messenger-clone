@@ -1,8 +1,7 @@
-import { ArrayMaxSize, ArrayMinSize, Length } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class UsersToConversationDto {
-  @Length(15, 20, { each: true })
-  @ArrayMinSize(2)
-  @ArrayMaxSize(2)
-  userIds: string[];
+  @IsString()
+  @IsNotEmpty()
+  otherUserId: string;
 }
