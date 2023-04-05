@@ -45,4 +45,29 @@ export class ConversationService {
       return newConversation;
     }
   }
+
+  async findAllConversation(userId: string) {
+    return await this.prisma.conversation.findMany({
+      where: {
+        userOnConversation: {
+          some: { userId: { equals: userId } },
+        },
+      },
+      select: {
+        id: true,
+        userOnConversation: {
+          where: { userId: { not: userId } },
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                picture: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
 }

@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { FC, useCallback } from "react";
-import { Button } from "react-native";
+import { Button, Text } from "react-native";
 
 import { NavigationProps } from "../../App";
 import { useStore } from "../store";
@@ -9,7 +9,7 @@ import { useStore } from "../store";
 const SettingsScreen: FC = () => {
   const navigation = useNavigation<NavigationProps>();
 
-  const { setIsModalOpened, setUser } = useStore();
+  const { setIsModalOpened, setUser, user } = useStore();
 
   useFocusEffect(
     useCallback(() => {
@@ -25,6 +25,7 @@ const SettingsScreen: FC = () => {
 
   return (
     <>
+      <Text className="text-white">{JSON.stringify(user, null, 2)}</Text>
       <Button
         title="Back Home"
         onPress={() => navigation.navigate("Home")}

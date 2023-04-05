@@ -7,9 +7,16 @@ import { ConfigModule } from '@nestjs/config';
 import { VerifyJWTMiddleware } from './auth/verify-jwt.middleware';
 import { ConversationModule } from './conversation/conversation.module';
 import { UserModule } from './user/user.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
-  imports: [AuthModule, ConfigModule.forRoot(), ConversationModule, UserModule],
+  imports: [
+    ConfigModule.forRoot(),
+    AuthModule,
+    ConversationModule,
+    UserModule,
+    EventsModule,
+  ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
