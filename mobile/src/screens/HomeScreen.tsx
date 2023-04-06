@@ -10,36 +10,39 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Conversations } from "server/src/conversation/conversation.service";
 import { io } from "socket.io-client";
 
 import { NavigationProps } from "../../App";
+import { useStore } from "../store";
 
 const HomeScreen: FC = () => {
   const navigation = useNavigation<NavigationProps>();
 
+  const { user } = useStore();
+
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<Conversations>([]);
 
   useEffect(() => {
     (async () => {
       const token = await AsyncStorage.getItem("token");
 
-      const newSocket = io(Constants.manifest.extra.serverURL, {
+      const socket = io(Constants.manifest.extra.serverURL, {
         auth: (cb) => {
           cb({ authorization: `Bearer ${token}` });
         },
       });
 
-      newSocket.emit("get-all-conversations");
+      socket.emit("get-all-conversations");
 
-      newSocket.on("update-conversations-list", (data) => {
-        console.log(JSON.stringify(data, null, 2));
+      socket.on("update-conversations-list", (data) => {
         setData(data);
         setIsLoading(false);
       });
 
-      newSocket.on("error-conversations-list", () => setIsError(true));
+      socket.on("error-conversations-list", () => setIsError(true));
     })();
   }, []);
 
@@ -66,9 +69,14 @@ const HomeScreen: FC = () => {
           <>
             <View>
               <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate("Chat", { conversationId: item.id })
-                }
+                onPress={() => {
+                  navigation.navigate("Chat", {
+                    conversationId: item.id,
+                    otherUserInfo: item.userOnConversation.find(
+                      (item) => item.user.id !== user.id
+                    ).user,
+                  });
+                }}
                 className="flex-row justify-between items-center px-4 py-3 gap-3"
               >
                 <View className="flex-row items-center">

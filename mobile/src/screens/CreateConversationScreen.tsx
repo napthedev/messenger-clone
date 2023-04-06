@@ -18,11 +18,14 @@ import { UsersType } from "server/src/user/user.service";
 import { NavigationProps } from "../../App";
 import { useModalBackgroundColor } from "../hooks/useModalBackgroundColor";
 import axios from "../services/axios";
+import { useStore } from "../store";
 
 const CreateConversationScreen: FC = () => {
   useModalBackgroundColor();
 
   const navigation = useNavigation<NavigationProps>();
+
+  const { user } = useStore();
 
   const { data, isLoading, isError } = useQuery<UsersType>(
     ["all-users-except-current"],
@@ -36,14 +39,19 @@ const CreateConversationScreen: FC = () => {
     navigation.setOptions({
       headerRight: () => (
         <Button
-          disabled={isCreating}
+          disabled={isCreating || !selectedUser}
           onPress={() => {
             setIsCreating(true);
             axios
               .post("/conversation/create", { otherUserId: selectedUser })
               .then((res) => {
                 navigation.goBack();
-                navigation.navigate("Chat", { conversationId: res.data.id });
+                navigation.navigate("Chat", {
+                  conversationId: res.data.id,
+                  otherUserInfo: res.data.userOnConversation.find(
+                    (item) => item.user.id !== user.id
+                  ),
+                });
               })
               .catch(() => {
                 Alert.alert("Failed to create conversation");
@@ -54,10 +62,10 @@ const CreateConversationScreen: FC = () => {
         />
       ),
     });
-  }, [selectedUser, navigation, isCreating]);
+  }, [selectedUser, navigation, isCreating, user.id]);
 
   return (
-    <View className="flex-1 bg-dark">
+    <View className="flex-1">
       {isLoading ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator color="#fff" />
@@ -69,15 +77,13 @@ const CreateConversationScreen: FC = () => {
       ) : (
         <View className="flex-1">
           <FlashList
-            data={data.map((item) => ({
-              ...item,
-              isSelected: item.id === selectedUser,
-            }))}
+            extraData={selectedUser}
+            data={data}
             renderItem={({ item }) => (
               <View>
                 <TouchableOpacity
                   onPress={() =>
-                    setSelectedUser(item.isSelected ? null : item.id)
+                    setSelectedUser(selectedUser === item.id ? null : item.id)
                   }
                   className="flex-row justify-between items-center px-4 py-3 gap-3 border-b border-b-[#333333]"
                 >
@@ -92,7 +98,7 @@ const CreateConversationScreen: FC = () => {
                       </Text>
                     </View>
                   </View>
-                  {item.isSelected && (
+                  {selectedUser === item.id && (
                     <AntDesign name="check" size={30} color="#2374E1" />
                   )}
                 </TouchableOpacity>

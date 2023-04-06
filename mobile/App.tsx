@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import { UserType } from "server/src/user/user.service";
 
 import Login from "./src/components/Login";
 import ChatScreen from "./src/screens/ChatScreen";
@@ -21,6 +22,7 @@ export type RootStackParamList = {
   Home: {};
   Chat: {
     conversationId: string;
+    otherUserInfo: UserType;
   };
   CreateConversation: {};
   Settings: {};
@@ -108,7 +110,14 @@ export default function App() {
                     ),
                   })}
                 />
-                <Stack.Screen name="Chat" component={ChatScreen} />
+                <Stack.Screen
+                  options={{
+                    headerBackTitleVisible: false,
+                    headerTitle: () => <></>,
+                  }}
+                  name="Chat"
+                  component={ChatScreen}
+                />
               </Stack.Group>
               <Stack.Group
                 screenOptions={{

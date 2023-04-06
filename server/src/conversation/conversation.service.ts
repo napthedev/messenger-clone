@@ -63,6 +63,7 @@ export class ConversationService {
                 id: true,
                 name: true,
                 picture: true,
+                email: true,
               },
             },
           },
@@ -71,3 +72,15 @@ export class ConversationService {
     });
   }
 }
+
+export type Conversations = {
+  id: string;
+  userOnConversation: {
+    user: {
+      id: string;
+      email: string;
+      name: string;
+      picture: string;
+    };
+  }[];
+}[];

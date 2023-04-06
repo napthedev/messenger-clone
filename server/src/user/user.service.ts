@@ -21,4 +21,5 @@ export class UserService {
   }
 }
 
+export type UserType = User;
 export type UsersType = User[];
