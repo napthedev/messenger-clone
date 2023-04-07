@@ -18,7 +18,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { UserType } from "server/src/user/user.service";
 
 import { NavigationProps } from "../../App";
-import { useStore } from "../store";
+import { useStore } from "../hooks/useStore";
 
 const windowWidth = Dimensions.get("window").width;
 
@@ -31,30 +31,61 @@ const ChatScreen: FC = () => {
     otherUserInfo: UserType;
   };
 
-  const { user } = useStore();
+  const { user, socket } = useStore();
+
+  const [inputValue, setInputValue] = useState("");
 
   const [messages, setMessages] = useState(
-    new Array(30)
-      .fill("")
-      .map((_, index) =>
-        index % 6 <= 2
-          ? {
-              id: index,
-              type: "text",
-              content: `Hello world ${index}`,
-              userId: user.id,
-            }
-          : {
-              id: index,
-              type: "text",
-              content: `Hello world ${index}`,
-              userId: otherUserInfo.id,
-            }
-      )
-      .reverse()
+    // new Array(30)
+    //   .fill("")
+    //   .map((_, index) =>
+    //     index % 6 <= 2
+    //       ? {
+    //           id: index,
+    //           type: "text",
+    //           content: `Hello world ${index}`,
+    //           userId: user.id,
+    //         }
+    //       : {
+    //           id: index,
+    //           type: "text",
+    //           content: `Hello world ${index}`,
+    //           userId: otherUserInfo.id,
+    //         }
+    //   )
+    //   .reverse()
+    []
   );
 
   const navigation = useNavigation<NavigationProps>();
+
+  const handleSubmit = () => {
+    if (inputValue.trim()) {
+      socket.emit("create-message", {
+        type: "text",
+        content: inputValue.trim(),
+        userId: user.id,
+        conversationId,
+      });
+      setInputValue("");
+      Keyboard.dismiss();
+    }
+  };
+
+  useEffect(() => {
+    socket.on("new-message", (data: any[]) => {
+      setMessages((prev) =>
+        [
+          ...prev.filter(
+            (item1) => !data.some((item2) => item1.id === item2.id)
+          ),
+          ...data,
+        ].sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
+      );
+    });
+
+    socket.emit("get-messages");
+  }, [socket]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -96,8 +127,8 @@ const ChatScreen: FC = () => {
   return (
     <SafeAreaView className="flex-1" edges={["bottom"]}>
       <KeyboardAvoidingView
-        keyboardVerticalOffset={90}
-        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+        className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <TouchableWithoutFeedback
@@ -167,21 +198,23 @@ const ChatScreen: FC = () => {
             estimatedItemSize={40}
           />
         </TouchableWithoutFeedback>
-        <View className="h-[66px] flex-row items-center gap-x-3 px-3 py-2">
-          <TouchableOpacity>
+        <View className="h-[66px] flex-row items-center gap-x-3 px-3 pt-2">
+          <TouchableOpacity className="flex-shrink-0">
             <FontAwesome name="camera" size={24} color="#2374E1" />
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity className="flex-shrink-0">
             <Ionicons name="ios-image" size={28} color="#2374E1" />
           </TouchableOpacity>
-          <View className="flex-grow">
-            <TextInput
-              className="bg-[#303030] text-white rounded-full py-2 px-3"
-              style={{ fontSize: 20 }}
-              placeholder="Aa"
-            />
-          </View>
-          <TouchableOpacity>
+          <TextInput
+            className="bg-[#303030] text-white rounded-full py-2 px-3 flex-1 overflow-hidden"
+            defaultValue="Lorem ipsum dolor sit amet, consectetur adipisicing elit. Blanditiis dolor non expedita. Nam numquam consequuntur laboriosam quibusdam! Quis dicta, repellendus obcaecati voluptates ipsum doloremque temporibus cupiditate. Possimus architecto aliquam delectus."
+            style={{ fontSize: 20 }}
+            placeholder="Aa"
+            value={inputValue}
+            onChangeText={(value) => setInputValue(value)}
+            onSubmitEditing={handleSubmit}
+          />
+          <TouchableOpacity onPress={handleSubmit} className="flex-shrink-0">
             <Ionicons name="ios-send" size={26} color="#2374E1" />
           </TouchableOpacity>
         </View>

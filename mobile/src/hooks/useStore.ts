@@ -1,3 +1,4 @@
+import { Socket } from "socket.io-client";
 import { create } from "zustand";
 
 interface User {
@@ -12,6 +13,8 @@ interface Store {
   setUser: (newUser: undefined | null | User) => void;
   isModalOpened: boolean;
   setIsModalOpened: (value: boolean) => void;
+  socket: Socket | null;
+  setSocket: (socket: Socket) => void;
 }
 
 export const useStore = create<Store>((set) => ({
@@ -19,4 +22,6 @@ export const useStore = create<Store>((set) => ({
   setUser: (newUser) => set({ user: newUser }),
   isModalOpened: false,
   setIsModalOpened: (value) => set({ isModalOpened: value }),
+  socket: null,
+  setSocket: (socket: Socket) => set({ socket }),
 }));

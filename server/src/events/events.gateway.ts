@@ -1,5 +1,6 @@
 import {
   ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   SubscribeMessage,
   WebSocketGateway,
@@ -7,6 +8,9 @@ import {
 import { Socket } from 'socket.io';
 import * as jwt from 'jsonwebtoken';
 import { ConversationService } from 'src/conversation/conversation.service';
+import { validateObject } from 'src/utils/validate';
+import { MessageDto } from 'src/message/dto/message.dto';
+import { MessageService } from 'src/message/message.service';
 
 @WebSocketGateway({
   cors: {
@@ -14,7 +18,10 @@ import { ConversationService } from 'src/conversation/conversation.service';
   },
 })
 export class EventsGateway implements OnGatewayConnection {
-  constructor(private readonly conversationService: ConversationService) {}
+  constructor(
+    private readonly conversationService: ConversationService,
+    private readonly messageService: MessageService,
+  ) {}
 
   handleConnection(client: Socket) {
     const authHeader = client.handshake.auth.authorization;
@@ -49,5 +56,30 @@ export class EventsGateway implements OnGatewayConnection {
         console.log(err);
         client.emit('error-conversations-list');
       });
+  }
+
+  @SubscribeMessage('create-message')
+  createMessage(@MessageBody() data, @ConnectedSocket() client: Socket) {
+    validateObject(data, MessageDto)
+      .then(() => {
+        this.messageService.createMessage(data).then((message) => {
+          client.emit('new-message', [message]);
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+  @SubscribeMessage('get-messages')
+  getMessages(
+    @MessageBody('conversationId') conversationId,
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.messageService
+      .getMessages(conversationId)
+      .then((data) => {
+        client.emit('new-message', data);
+      })
+      .catch((err) => console.log(err));
   }
 }

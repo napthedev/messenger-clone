@@ -4,7 +4,7 @@ import { FC, useCallback } from "react";
 import { Button, Text } from "react-native";
 
 import { NavigationProps } from "../../App";
-import { useStore } from "../store";
+import { useStore } from "../hooks/useStore";
 
 const SettingsScreen: FC = () => {
   const navigation = useNavigation<NavigationProps>();

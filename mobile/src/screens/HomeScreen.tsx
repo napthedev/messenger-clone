@@ -1,7 +1,5 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { FlashList } from "@shopify/flash-list";
-import Constants from "expo-constants";
 import { FC, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,40 +9,29 @@ import {
   View,
 } from "react-native";
 import { Conversations } from "server/src/conversation/conversation.service";
-import { io } from "socket.io-client";
 
 import { NavigationProps } from "../../App";
-import { useStore } from "../store";
+import { useStore } from "../hooks/useStore";
 
 const HomeScreen: FC = () => {
   const navigation = useNavigation<NavigationProps>();
 
-  const { user } = useStore();
+  const { user, socket } = useStore();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [data, setData] = useState<Conversations>([]);
 
   useEffect(() => {
-    (async () => {
-      const token = await AsyncStorage.getItem("token");
+    socket.emit("get-all-conversations");
 
-      const socket = io(Constants.manifest.extra.serverURL, {
-        auth: (cb) => {
-          cb({ authorization: `Bearer ${token}` });
-        },
-      });
+    socket.on("update-conversations-list", (data) => {
+      setData(data);
+      setIsLoading(false);
+    });
 
-      socket.emit("get-all-conversations");
-
-      socket.on("update-conversations-list", (data) => {
-        setData(data);
-        setIsLoading(false);
-      });
-
-      socket.on("error-conversations-list", () => setIsError(true));
-    })();
-  }, []);
+    socket.on("error-conversations-list", () => setIsError(true));
+  }, [socket]);
 
   if (isError)
     return (

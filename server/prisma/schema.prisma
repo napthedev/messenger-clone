@@ -23,6 +23,7 @@ model Conversation {
   id                 String               @id @default(uuid()) @map("_id")
   userOnConversation UserOnConversation[]
   messages           Message[]
+  updatedAt          DateTime             @default(now())
 }
 
 model UserOnConversation {
@@ -34,10 +35,10 @@ model UserOnConversation {
 }
 
 model Message {
-  id      String @id @default(uuid()) @map("_id")
-  type    String
-  content String
-
+  id             String       @id @default(uuid()) @map("_id")
+  type           String
+  content        String
+  createdAt      DateTime     @default(now())
   userId         String
   user           User         @relation(references: [id], fields: [userId])
   conversationId String

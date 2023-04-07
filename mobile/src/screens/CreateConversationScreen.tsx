@@ -16,9 +16,9 @@ import {
 import { UsersType } from "server/src/user/user.service";
 
 import { NavigationProps } from "../../App";
+import { useStore } from "../hooks/useStore";
 import { useModalBackgroundColor } from "../hooks/useModalBackgroundColor";
 import axios from "../services/axios";
-import { useStore } from "../store";
 
 const CreateConversationScreen: FC = () => {
   useModalBackgroundColor();

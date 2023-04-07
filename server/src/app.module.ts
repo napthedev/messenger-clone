@@ -8,6 +8,7 @@ import { VerifyJWTMiddleware } from './auth/verify-jwt.middleware';
 import { ConversationModule } from './conversation/conversation.module';
 import { UserModule } from './user/user.module';
 import { EventsModule } from './events/events.module';
+import { MessageModule } from './message/message.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { EventsModule } from './events/events.module';
     ConversationModule,
     UserModule,
     EventsModule,
+    MessageModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

@@ -14,7 +14,7 @@ import {
 } from "react-native";
 
 import axios from "../services/axios";
-import { useStore } from "../store";
+import { useStore } from "../hooks/useStore";
 
 WebBrowser.maybeCompleteAuthSession();
 
