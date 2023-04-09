@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { MessageDto } from './dto/message.dto';
 import { PrismaService } from 'src/prisma.service';
+import { Message } from '@prisma/client';
 
 @Injectable()
 export class MessageService {
@@ -20,6 +21,7 @@ export class MessageService {
         content: true,
         createdAt: true,
         userId: true,
+        conversationId: true,
       },
       orderBy: {
         createdAt: 'asc',
@@ -27,3 +29,5 @@ export class MessageService {
     });
   }
 }
+
+export type MessageType = Message;

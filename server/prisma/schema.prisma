@@ -35,7 +35,7 @@ model UserOnConversation {
 }
 
 model Message {
-  id             String       @id @default(uuid()) @map("_id")
+  id             String       @id @map("_id")
   type           String
   content        String
   createdAt      DateTime     @default(now())

@@ -4,13 +4,15 @@ import {
   OnGatewayConnection,
   SubscribeMessage,
   WebSocketGateway,
+  WebSocketServer,
+  WsException,
 } from '@nestjs/websockets';
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import * as jwt from 'jsonwebtoken';
 import { ConversationService } from 'src/conversation/conversation.service';
-import { validateObject } from 'src/utils/validate';
 import { MessageDto } from 'src/message/dto/message.dto';
 import { MessageService } from 'src/message/message.service';
+import { UsePipes, ValidationPipe } from '@nestjs/common';
 
 @WebSocketGateway({
   cors: {
@@ -23,11 +25,13 @@ export class EventsGateway implements OnGatewayConnection {
     private readonly messageService: MessageService,
   ) {}
 
+  @WebSocketServer()
+  server: Server;
+
   handleConnection(client: Socket) {
     const authHeader = client.handshake.auth.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      client.disconnect();
-      return;
+      throw new WsException('Invalid credentials.');
     }
 
     try {
@@ -36,10 +40,9 @@ export class EventsGateway implements OnGatewayConnection {
         process.env.PRIVATE_KEY!,
       ) as any;
 
-      client.data = { user };
+      client.data.user = user;
     } catch (error) {
-      console.log(error);
-      client.disconnect();
+      throw new WsException('Invalid credentials.');
     }
   }
 
@@ -58,23 +61,25 @@ export class EventsGateway implements OnGatewayConnection {
       });
   }
 
+  @UsePipes(
+    new ValidationPipe({
+      exceptionFactory(errors) {
+        return new WsException(errors.join(','));
+      },
+    }),
+  )
   @SubscribeMessage('create-message')
-  createMessage(@MessageBody() data, @ConnectedSocket() client: Socket) {
-    validateObject(data, MessageDto)
-      .then(() => {
-        this.messageService.createMessage(data).then((message) => {
-          client.emit('new-message', [message]);
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+  createMessage(@MessageBody() data: MessageDto) {
+    this.messageService.createMessage(data).then((message) => {
+      this.server.to(message.conversationId).emit('new-message', [message]);
+    });
   }
-  @SubscribeMessage('get-messages')
+  @SubscribeMessage('join-room')
   getMessages(
     @MessageBody('conversationId') conversationId,
     @ConnectedSocket() client: Socket,
   ) {
+    client.join(conversationId);
     this.messageService
       .getMessages(conversationId)
       .then((data) => {

@@ -3,6 +3,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { FlashList } from "@shopify/flash-list";
 import { FC, useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -15,10 +16,12 @@ import {
 } from "react-native";
 import { Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { MessageType } from "server/src/message/message.service";
 import { UserType } from "server/src/user/user.service";
 
 import { NavigationProps } from "../../App";
 import { useStore } from "../hooks/useStore";
+import { uuid } from "../utils/uuid";
 
 const windowWidth = Dimensions.get("window").width;
 
@@ -35,38 +38,28 @@ const ChatScreen: FC = () => {
 
   const [inputValue, setInputValue] = useState("");
 
-  const [messages, setMessages] = useState(
-    // new Array(30)
-    //   .fill("")
-    //   .map((_, index) =>
-    //     index % 6 <= 2
-    //       ? {
-    //           id: index,
-    //           type: "text",
-    //           content: `Hello world ${index}`,
-    //           userId: user.id,
-    //         }
-    //       : {
-    //           id: index,
-    //           type: "text",
-    //           content: `Hello world ${index}`,
-    //           userId: otherUserInfo.id,
-    //         }
-    //   )
-    //   .reverse()
-    []
-  );
+  const [messages, setMessages] = useState<MessageType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const navigation = useNavigation<NavigationProps>();
 
   const handleSubmit = () => {
     if (inputValue.trim()) {
-      socket.emit("create-message", {
+      const newMessage = {
+        id: uuid(),
         type: "text",
         content: inputValue.trim(),
         userId: user.id,
         conversationId,
-      });
+        createdAt: new Date(),
+      };
+      setMessages((prev) =>
+        [...prev, newMessage].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+      );
+      socket.emit("create-message", newMessage);
       setInputValue("");
       Keyboard.dismiss();
     }
@@ -80,12 +73,20 @@ const ChatScreen: FC = () => {
             (item1) => !data.some((item2) => item1.id === item2.id)
           ),
           ...data,
-        ].sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
+        ].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
       );
+      setIsLoading(false);
     });
 
-    socket.emit("get-messages");
-  }, [socket]);
+    socket.emit("join-room", { conversationId });
+
+    return () => {
+      socket.off("new-message");
+    };
+  }, [socket, conversationId]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -135,68 +136,74 @@ const ChatScreen: FC = () => {
           onPress={() => Keyboard.dismiss()}
           className="flex-1"
         >
-          <FlashList
-            inverted
-            data={messages}
-            renderItem={({ item, index }) =>
-              item.userId === user.id ? (
-                <View className="flex-row justify-end mb-[2px] px-2">
-                  <View
-                    className={`bg-[#4E5BF5] py-[6px] px-4 overflow-hidden rounded-[20px] ${
-                      messages?.[index + 1]?.userId === item.userId
-                        ? "rounded-tr-md"
-                        : ""
-                    } ${
-                      messages?.[index - 1]?.userId === item.userId
-                        ? "rounded-br-md"
-                        : ""
-                    }`}
-                  >
-                    <Text
-                      className="text-white text-lg"
-                      style={{ maxWidth: (windowWidth * 3) / 5 }}
+          {isLoading ? (
+            <View className="flex-1 justify-center items-center">
+              <ActivityIndicator />
+            </View>
+          ) : (
+            <FlashList
+              inverted
+              data={messages}
+              renderItem={({ item, index }) =>
+                item.userId === user.id ? (
+                  <View className="flex-row justify-end mb-[2px] px-2">
+                    <View
+                      className={`bg-[#4E5BF5] py-[6px] px-4 overflow-hidden rounded-[20px] ${
+                        messages?.[index + 1]?.userId === item.userId
+                          ? "rounded-tr-md"
+                          : ""
+                      } ${
+                        messages?.[index - 1]?.userId === item.userId
+                          ? "rounded-br-md"
+                          : ""
+                      }`}
                     >
-                      {item.content}
-                    </Text>
+                      <Text
+                        className="text-white text-lg"
+                        style={{ maxWidth: (windowWidth * 3) / 5 }}
+                      >
+                        {item.content}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              ) : (
-                <View className="flex-row justify-start mb-[2px] px-2">
-                  <View className="w-[44px]">
-                    {messages?.[index - 1]?.userId !== item.userId && (
-                      <Image
-                        className="rounded-[40px]"
-                        source={{
-                          uri: otherUserInfo.picture,
-                          width: 35,
-                          height: 35,
-                        }}
-                      />
-                    )}
-                  </View>
-                  <View
-                    className={`bg-[#303030] py-[6px] px-4 overflow-hidden rounded-[20px] ${
-                      messages?.[index + 1]?.userId === item.userId
-                        ? "rounded-tl-md"
-                        : ""
-                    } ${
-                      messages?.[index - 1]?.userId === item.userId
-                        ? "rounded-bl-md"
-                        : ""
-                    }`}
-                  >
-                    <Text
-                      className="text-white text-lg"
-                      style={{ maxWidth: (windowWidth * 3) / 5 }}
+                ) : (
+                  <View className="flex-row justify-start mb-[2px] px-2">
+                    <View className="w-[44px]">
+                      {messages?.[index - 1]?.userId !== item.userId && (
+                        <Image
+                          className="rounded-[40px]"
+                          source={{
+                            uri: otherUserInfo.picture,
+                            width: 35,
+                            height: 35,
+                          }}
+                        />
+                      )}
+                    </View>
+                    <View
+                      className={`bg-[#303030] py-[6px] px-4 overflow-hidden rounded-[20px] ${
+                        messages?.[index + 1]?.userId === item.userId
+                          ? "rounded-tl-md"
+                          : ""
+                      } ${
+                        messages?.[index - 1]?.userId === item.userId
+                          ? "rounded-bl-md"
+                          : ""
+                      }`}
                     >
-                      {item.content}
-                    </Text>
+                      <Text
+                        className="text-white text-lg"
+                        style={{ maxWidth: (windowWidth * 3) / 5 }}
+                      >
+                        {item.content}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              )
-            }
-            estimatedItemSize={40}
-          />
+                )
+              }
+              estimatedItemSize={40}
+            />
+          )}
         </TouchableWithoutFeedback>
         <View className="h-[66px] flex-row items-center gap-x-3 px-3 pt-2">
           <TouchableOpacity className="flex-shrink-0">

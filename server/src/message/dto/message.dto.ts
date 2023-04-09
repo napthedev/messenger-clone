@@ -1,6 +1,9 @@
-import { IsNotEmpty, IsString, IsIn, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, IsIn, MaxLength, IsUUID } from 'class-validator';
 
 export class MessageDto {
+  @IsUUID('all')
+  id: string;
+
   @IsIn(['text', 'image'])
   type: string;
 
