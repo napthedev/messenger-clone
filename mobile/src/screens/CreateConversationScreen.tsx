@@ -66,7 +66,7 @@ const CreateConversationScreen: FC = () => {
   }, [selectedUser, navigation, isCreating, user.id]);
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 bg-dark">
       {isLoading ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator color="#fff" />

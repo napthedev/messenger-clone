@@ -7,7 +7,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Button,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { UserType } from "server/src/user/user.service";
 import { io } from "socket.io-client";
 
@@ -189,7 +195,23 @@ function MainNavigation() {
               headerStyle: { backgroundColor: "#222222" },
             })}
           />
-          <Stack.Screen name="Settings" component={SettingsScreen} />
+          <Stack.Screen
+            name="Settings"
+            component={SettingsScreen}
+            options={({ navigation }) => ({
+              headerRight: ({ tintColor }) => (
+                <Button
+                  onPress={() => navigation.navigate("Home")}
+                  color={tintColor}
+                  title="Done"
+                ></Button>
+              ),
+              headerTitleStyle: { fontWeight: "bold", fontSize: 20 },
+              headerStyle: { backgroundColor: "#222222" },
+              headerShadowVisible: false,
+              headerTitleAlign: "center",
+            })}
+          />
         </Stack.Group>
       </Stack.Navigator>
     </NavigationContainer>
