@@ -19,6 +19,18 @@ export class UserService {
       },
     });
   }
+
+  async userInfo(userId: string) {
+    return this.prisma.user.findFirstOrThrow({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        picture: true,
+      },
+    });
+  }
 }
 
 export type UserType = User;

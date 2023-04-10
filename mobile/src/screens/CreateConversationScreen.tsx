@@ -16,9 +16,10 @@ import {
 import { UsersType } from "server/src/user/user.service";
 
 import { NavigationProps } from "../../App";
-import { useStore } from "../hooks/useStore";
 import { useModalBackgroundColor } from "../hooks/useModalBackgroundColor";
+import { useStore } from "../hooks/useStore";
 import axios from "../services/axios";
+import { imageProxy } from "../utils/image";
 
 const CreateConversationScreen: FC = () => {
   useModalBackgroundColor();
@@ -90,7 +91,11 @@ const CreateConversationScreen: FC = () => {
                   <View className="flex-row items-center">
                     <Image
                       className="rounded-full mr-3"
-                      source={{ uri: item.picture, width: 55, height: 55 }}
+                      source={{
+                        uri: imageProxy(item.picture),
+                        width: 55,
+                        height: 55,
+                      }}
                     />
                     <View className="justify-center">
                       <Text className="text-white font-bold text-xl">

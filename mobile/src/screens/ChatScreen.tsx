@@ -21,6 +21,7 @@ import { UserType } from "server/src/user/user.service";
 
 import { NavigationProps } from "../../App";
 import { useStore } from "../hooks/useStore";
+import { imageProxy } from "../utils/image";
 import { uuid } from "../utils/uuid";
 
 const windowWidth = Dimensions.get("window").width;
@@ -28,7 +29,6 @@ const windowWidth = Dimensions.get("window").width;
 const ChatScreen: FC = () => {
   const route = useRoute();
 
-  //@ts-ignore
   const { conversationId, otherUserInfo } = route.params as {
     conversationId: string;
     otherUserInfo: UserType;
@@ -94,14 +94,16 @@ const ChatScreen: FC = () => {
         return (
           <View className="flex-1">
             <TouchableOpacity
-              onPress={() => {}}
+              onPress={() =>
+                navigation.navigate("Profile", { userId: otherUserInfo.id })
+              }
               className="flex-row justify-between items-center"
             >
               <View className="flex-row items-center">
                 <Image
                   className="rounded-full mr-3"
                   source={{
-                    uri: otherUserInfo.picture,
+                    uri: imageProxy(otherUserInfo.picture),
                     width: 35,
                     height: 35,
                   }}
@@ -123,7 +125,7 @@ const ChatScreen: FC = () => {
         );
       },
     });
-  }, [navigation, otherUserInfo.picture, otherUserInfo.name]);
+  }, [navigation, otherUserInfo.picture, otherUserInfo.name, otherUserInfo.id]);
 
   return (
     <SafeAreaView className="flex-1" edges={["bottom"]}>
@@ -173,7 +175,7 @@ const ChatScreen: FC = () => {
                         <Image
                           className="rounded-[40px]"
                           source={{
-                            uri: otherUserInfo.picture,
+                            uri: imageProxy(otherUserInfo.picture),
                             width: 35,
                             height: 35,
                           }}
@@ -217,6 +219,7 @@ const ChatScreen: FC = () => {
             defaultValue="Lorem ipsum dolor sit amet, consectetur adipisicing elit. Blanditiis dolor non expedita. Nam numquam consequuntur laboriosam quibusdam! Quis dicta, repellendus obcaecati voluptates ipsum doloremque temporibus cupiditate. Possimus architecto aliquam delectus."
             style={{ fontSize: 20 }}
             placeholder="Aa"
+            placeholderTextColor="#656568"
             value={inputValue}
             onChangeText={(value) => setInputValue(value)}
             onSubmitEditing={handleSubmit}

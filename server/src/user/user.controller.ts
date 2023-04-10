@@ -1,4 +1,4 @@
-import { Controller, Get, Request } from '@nestjs/common';
+import { Controller, Get, Query, Request } from '@nestjs/common';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -8,5 +8,10 @@ export class UserController {
   @Get('/all-users-except-current')
   getAllUsers(@Request() req) {
     return this.service.allUsersExceptCurrent(req.user.id);
+  }
+
+  @Get('/user-info')
+  getUserInfo(@Query('userId') userId: string) {
+    return this.service.userInfo(userId);
   }
 }

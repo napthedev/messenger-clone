@@ -16,6 +16,7 @@ import { useStore } from "./src/hooks/useStore";
 import ChatScreen from "./src/screens/ChatScreen";
 import CreateConversationScreen from "./src/screens/CreateConversationScreen";
 import HomeScreen from "./src/screens/HomeScreen";
+import ProfileScreen from "./src/screens/ProfileScreen";
 import SettingsScreen from "./src/screens/SettingsScreen";
 import axios from "./src/services/axios";
 
@@ -26,6 +27,9 @@ export type RootStackParamList = {
   Chat: {
     conversationId: string;
     otherUserInfo: UserType;
+  };
+  Profile: {
+    userId: string;
   };
   CreateConversation: {};
   Settings: {};
@@ -121,6 +125,7 @@ function MainNavigation() {
             options={({ navigation }) => ({
               title: "Chats",
               headerTitleStyle: { fontSize: 20, fontWeight: "700" },
+              headerTitleAlign: "center",
               headerLeft: (props) => (
                 <TouchableOpacity
                   onPress={() => navigation.navigate("Settings")}
@@ -153,6 +158,15 @@ function MainNavigation() {
             name="Chat"
             component={ChatScreen}
           />
+          <Stack.Screen
+            name="Profile"
+            component={ProfileScreen}
+            options={{
+              headerTitle: () => <></>,
+              headerBackTitleVisible: false,
+              headerShadowVisible: false,
+            }}
+          />
         </Stack.Group>
         <Stack.Group
           screenOptions={{
@@ -170,6 +184,7 @@ function MainNavigation() {
                   <Text className="text-primary text-[18px]">Cancel</Text>
                 </TouchableOpacity>
               ),
+              headerTitleAlign: "center",
               headerTitle: "New message",
               headerStyle: { backgroundColor: "#222222" },
             })}
