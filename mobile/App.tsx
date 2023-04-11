@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DarkTheme, NavigationContainer } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -22,6 +22,7 @@ import { useStore } from "./src/hooks/useStore";
 import ChatScreen from "./src/screens/ChatScreen";
 import CreateConversationScreen from "./src/screens/CreateConversationScreen";
 import HomeScreen from "./src/screens/HomeScreen";
+import ImageViewer from "./src/screens/ImageViewer";
 import ProfileScreen from "./src/screens/ProfileScreen";
 import SettingsScreen from "./src/screens/SettingsScreen";
 import axios from "./src/services/axios";
@@ -39,6 +40,9 @@ export type RootStackParamList = {
   };
   CreateConversation: {};
   Settings: {};
+  ImageViewer: {
+    uri: string;
+  };
 };
 export type NavigationProps = NativeStackNavigationProp<RootStackParamList>;
 
@@ -172,6 +176,27 @@ function MainNavigation() {
               headerBackTitleVisible: false,
               headerShadowVisible: false,
             }}
+          />
+        </Stack.Group>
+        <Stack.Group screenOptions={{ presentation: "fullScreenModal" }}>
+          <Stack.Screen
+            name="ImageViewer"
+            component={ImageViewer}
+            options={({ navigation }) => ({
+              headerTitle: () => <></>,
+              headerLeft: (props) => (
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                  <Feather name="x" size={24} color={props.tintColor} />
+                </TouchableOpacity>
+              ),
+              headerRight: (props) => (
+                <TouchableOpacity>
+                  <Feather name="download" size={24} color={props.tintColor} />
+                </TouchableOpacity>
+              ),
+              headerBackVisible: false,
+              headerShadowVisible: false,
+            })}
           />
         </Stack.Group>
         <Stack.Group

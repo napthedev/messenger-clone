@@ -1,9 +1,12 @@
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { FlashList } from "@shopify/flash-list";
+import Constants from "expo-constants";
+import * as ImagePicker from "expo-image-picker";
 import { FC, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -20,8 +23,9 @@ import { MessageType } from "server/src/message/message.service";
 import { UserType } from "server/src/user/user.service";
 
 import { NavigationProps } from "../../App";
+import CustomImage from "../components/CustomImage";
 import { useStore } from "../hooks/useStore";
-import { imageProxy } from "../utils/image";
+import { imageProxy, imageProxyPlus } from "../utils/image";
 import { uuid } from "../utils/uuid";
 
 const windowWidth = Dimensions.get("window").width;
@@ -43,25 +47,29 @@ const ChatScreen: FC = () => {
 
   const navigation = useNavigation<NavigationProps>();
 
+  const handleAddNewMessage = (type: "text" | "image", content: string) => {
+    const newMessage = {
+      id: uuid(),
+      type,
+      content: content,
+      userId: user.id,
+      conversationId,
+      createdAt: new Date(),
+    };
+    setMessages((prev) =>
+      [...prev, newMessage].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+    );
+    socket.emit("create-message", newMessage);
+    setInputValue("");
+    Keyboard.dismiss();
+  };
+
   const handleSubmit = () => {
     if (inputValue.trim()) {
-      const newMessage = {
-        id: uuid(),
-        type: "text",
-        content: inputValue.trim(),
-        userId: user.id,
-        conversationId,
-        createdAt: new Date(),
-      };
-      setMessages((prev) =>
-        [...prev, newMessage].sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        )
-      );
-      socket.emit("create-message", newMessage);
-      setInputValue("");
-      Keyboard.dismiss();
+      handleAddNewMessage("text", inputValue.trim());
     }
   };
 
@@ -127,6 +135,38 @@ const ChatScreen: FC = () => {
     });
   }, [navigation, otherUserInfo.picture, otherUserInfo.name, otherUserInfo.id]);
 
+  const pickImageAsync = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      quality: 1,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      base64: true,
+    });
+
+    if (result?.assets?.[0]?.base64) {
+      let bodyContent = new FormData();
+      bodyContent.append("image", result.assets[0].base64);
+
+      fetch(
+        `https://api.imgbb.com/1/upload?key=${Constants.manifest.extra.imgbbAPIKey}`,
+        {
+          method: "POST",
+          body: bodyContent,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          handleAddNewMessage("image", data.data.display_url);
+        })
+        .catch((err) => {
+          console.log(err);
+          Alert.alert("Failed to upload image");
+        });
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1" edges={["bottom"]}>
       <KeyboardAvoidingView
@@ -149,24 +189,44 @@ const ChatScreen: FC = () => {
               renderItem={({ item, index }) =>
                 item.userId === user.id ? (
                   <View className="flex-row justify-end mb-[2px] px-2">
-                    <View
-                      className={`bg-[#4E5BF5] py-[6px] px-4 overflow-hidden rounded-[20px] ${
-                        messages?.[index + 1]?.userId === item.userId
-                          ? "rounded-tr-md"
-                          : ""
-                      } ${
-                        messages?.[index - 1]?.userId === item.userId
-                          ? "rounded-br-md"
-                          : ""
-                      }`}
-                    >
-                      <Text
-                        className="text-white text-lg"
-                        style={{ maxWidth: (windowWidth * 3) / 5 }}
+                    {item.type === "text" ? (
+                      <View
+                        className={`bg-[#4E5BF5] py-[6px] px-4 overflow-hidden rounded-[20px] ${
+                          messages?.[index + 1]?.userId === item.userId
+                            ? "rounded-tr-md"
+                            : "mt-2"
+                        } ${
+                          messages?.[index - 1]?.userId === item.userId
+                            ? "rounded-br-md"
+                            : "mb-2"
+                        }`}
                       >
-                        {item.content}
-                      </Text>
-                    </View>
+                        <Text
+                          className="text-white text-lg"
+                          style={{ maxWidth: (windowWidth * 3) / 5 }}
+                        >
+                          {item.content}
+                        </Text>
+                      </View>
+                    ) : (
+                      <TouchableOpacity
+                        activeOpacity={0.9}
+                        onPress={() => {
+                          navigation.navigate("ImageViewer", {
+                            uri: item.content,
+                          });
+                        }}
+                      >
+                        <CustomImage
+                          uri={imageProxyPlus(
+                            item.content,
+                            (windowWidth / 3) * 2,
+                            500,
+                            "inside"
+                          )}
+                        />
+                      </TouchableOpacity>
+                    )}
                   </View>
                 ) : (
                   <View className="flex-row justify-start mb-[2px] px-2">
@@ -182,24 +242,44 @@ const ChatScreen: FC = () => {
                         />
                       )}
                     </View>
-                    <View
-                      className={`bg-[#303030] py-[6px] px-4 overflow-hidden rounded-[20px] ${
-                        messages?.[index + 1]?.userId === item.userId
-                          ? "rounded-tl-md"
-                          : ""
-                      } ${
-                        messages?.[index - 1]?.userId === item.userId
-                          ? "rounded-bl-md"
-                          : ""
-                      }`}
-                    >
-                      <Text
-                        className="text-white text-lg"
-                        style={{ maxWidth: (windowWidth * 3) / 5 }}
+                    {item.type === "text" ? (
+                      <View
+                        className={`bg-[#303030] py-[6px] px-4 overflow-hidden rounded-[20px] ${
+                          messages?.[index + 1]?.userId === item.userId
+                            ? "rounded-tl-md"
+                            : "mt-2"
+                        } ${
+                          messages?.[index - 1]?.userId === item.userId
+                            ? "rounded-bl-md"
+                            : "mb-2"
+                        }`}
                       >
-                        {item.content}
-                      </Text>
-                    </View>
+                        <Text
+                          className="text-white text-lg"
+                          style={{ maxWidth: (windowWidth * 3) / 5 }}
+                        >
+                          {item.content}
+                        </Text>
+                      </View>
+                    ) : (
+                      <TouchableOpacity
+                        activeOpacity={0.9}
+                        onPress={() => {
+                          navigation.navigate("ImageViewer", {
+                            uri: item.content,
+                          });
+                        }}
+                      >
+                        <CustomImage
+                          uri={imageProxyPlus(
+                            item.content,
+                            (windowWidth / 3) * 2,
+                            500,
+                            "inside"
+                          )}
+                        />
+                      </TouchableOpacity>
+                    )}
                   </View>
                 )
               }
@@ -208,10 +288,7 @@ const ChatScreen: FC = () => {
           )}
         </TouchableWithoutFeedback>
         <View className="h-[66px] flex-row items-center gap-x-3 px-3 pt-2">
-          <TouchableOpacity className="flex-shrink-0">
-            <FontAwesome name="camera" size={24} color="#2374E1" />
-          </TouchableOpacity>
-          <TouchableOpacity className="flex-shrink-0">
+          <TouchableOpacity onPress={pickImageAsync} className="flex-shrink-0">
             <Ionicons name="ios-image" size={28} color="#2374E1" />
           </TouchableOpacity>
           <TextInput

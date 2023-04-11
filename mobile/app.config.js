@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 module.exports = {
-  name: "messenger-clone",
+  name: "Messenger Clone",
   slug: "messenger-clone",
   owner: "naptest",
   privacy: "public",
@@ -33,8 +33,19 @@ module.exports = {
   web: {
     favicon: "./assets/favicon.png",
   },
+  plugins: [
+    [
+      "expo-media-library",
+      {
+        photosPermission: "Allow $(PRODUCT_NAME) to access your photos.",
+        savePhotosPermission: "Allow $(PRODUCT_NAME) to save photos.",
+        isAccessMediaLocationEnabled: true,
+      },
+    ],
+  ],
   extra: {
     serverURL: process.env.API_URL || "http://localhost:3000",
     facebookAppId: process.env.FACEBOOK_APP_ID,
+    imgbbAPIKey: process.env.IMGBB_API_KEY,
   },
 };
