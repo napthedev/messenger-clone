@@ -68,6 +68,20 @@ export class ConversationService {
             },
           },
         },
+        messages: {
+          take: 1,
+          orderBy: {
+            createdAt: 'desc',
+          },
+          select: {
+            type: true,
+            content: true,
+            user: { select: { name: true } },
+          },
+        },
+      },
+      orderBy: {
+        updatedAt: 'desc',
       },
     });
   }
@@ -82,5 +96,12 @@ export type Conversations = {
       name: string;
       picture: string;
     };
+  }[];
+  messages: {
+    user: {
+      name: string;
+    };
+    type: string;
+    content: string;
   }[];
 }[];

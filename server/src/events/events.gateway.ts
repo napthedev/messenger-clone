@@ -41,8 +41,10 @@ export class EventsGateway implements OnGatewayConnection {
       ) as any;
 
       client.data.user = user;
+
+      client.join(user.id);
     } catch (error) {
-      throw new WsException('Invalid credentials.');
+      throw new WsException('Invalid credentials');
     }
   }
 
@@ -72,8 +74,17 @@ export class EventsGateway implements OnGatewayConnection {
   createMessage(@MessageBody() data: MessageDto) {
     this.messageService.createMessage(data).then((message) => {
       this.server.to(message.conversationId).emit('new-message', [message]);
+      message.conversation.userOnConversation.forEach(async (item) => {
+        this.server
+          .to(item.userId)
+          .emit(
+            'update-conversations-list',
+            await this.conversationService.findAllConversation(item.userId),
+          );
+      });
     });
   }
+
   @SubscribeMessage('join-room')
   getMessages(
     @MessageBody('conversationId') conversationId,

@@ -8,7 +8,27 @@ export class MessageService {
   constructor(private prisma: PrismaService) {}
 
   async createMessage(data: MessageDto) {
-    return await this.prisma.message.create({ data });
+    const [result] = await this.prisma.$transaction([
+      this.prisma.message.create({
+        data,
+        select: {
+          id: true,
+          type: true,
+          content: true,
+          createdAt: true,
+          userId: true,
+          conversationId: true,
+          conversation: {
+            select: { userOnConversation: { select: { userId: true } } },
+          },
+        },
+      }),
+      this.prisma.conversation.update({
+        where: { id: data.conversationId },
+        data: { updatedAt: new Date() },
+      }),
+    ]);
+    return result;
   }
   async getMessages(conversationId: string) {
     return await this.prisma.message.findMany({

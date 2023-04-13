@@ -51,7 +51,7 @@ const CreateConversationScreen: FC = () => {
                   conversationId: res.data.id,
                   otherUserInfo: res.data.userOnConversation.find(
                     (item) => item.user.id !== user.id
-                  ),
+                  ).user,
                 });
               })
               .catch(() => {

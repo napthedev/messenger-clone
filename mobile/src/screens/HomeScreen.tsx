@@ -49,6 +49,11 @@ const HomeScreen: FC = () => {
 
   return (
     <View className="flex-1">
+      {data.length === 0 && (
+        <Text className="text-white my-3 text-center">
+          No conversation available
+        </Text>
+      )}
       <FlashList
         data={data}
         estimatedItemSize={79}
@@ -80,7 +85,13 @@ const HomeScreen: FC = () => {
                       {item.userOnConversation[0].user.name}
                     </Text>
                     <Text className="text-[#6D6D6D]">
-                      Please implement the last message feature
+                      {item.messages?.[0]?.content
+                        ? `${item.messages[0].user.name}: ${
+                            item.messages[0].type === "image"
+                              ? "Sent you an image"
+                              : item.messages[0].content
+                          }`
+                        : "Start sending messages"}
                     </Text>
                   </View>
                 </View>

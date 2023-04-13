@@ -194,11 +194,11 @@ const ChatScreen: FC = () => {
                         className={`bg-[#4E5BF5] py-[6px] px-4 overflow-hidden rounded-[20px] ${
                           messages?.[index + 1]?.userId === item.userId
                             ? "rounded-tr-md"
-                            : "mt-2"
+                            : ""
                         } ${
                           messages?.[index - 1]?.userId === item.userId
                             ? "rounded-br-md"
-                            : "mb-2"
+                            : ""
                         }`}
                       >
                         <Text
@@ -247,11 +247,11 @@ const ChatScreen: FC = () => {
                         className={`bg-[#303030] py-[6px] px-4 overflow-hidden rounded-[20px] ${
                           messages?.[index + 1]?.userId === item.userId
                             ? "rounded-tl-md"
-                            : "mt-2"
+                            : ""
                         } ${
                           messages?.[index - 1]?.userId === item.userId
                             ? "rounded-bl-md"
-                            : "mb-2"
+                            : ""
                         }`}
                       >
                         <Text

@@ -224,10 +224,9 @@ function MainNavigation() {
             name="Settings"
             component={SettingsScreen}
             options={({ navigation }) => ({
-              headerRight: ({ tintColor }) => (
+              headerRight: () => (
                 <Button
                   onPress={() => navigation.navigate("Home")}
-                  color={tintColor}
                   title="Done"
                 ></Button>
               ),
@@ -235,6 +234,7 @@ function MainNavigation() {
               headerStyle: { backgroundColor: "#222222" },
               headerShadowVisible: false,
               headerTitleAlign: "center",
+              headerBackVisible: false,
             })}
           />
         </Stack.Group>
