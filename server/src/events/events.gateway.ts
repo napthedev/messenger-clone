@@ -13,6 +13,7 @@ import { ConversationService } from 'src/conversation/conversation.service';
 import { MessageDto } from 'src/message/dto/message.dto';
 import { MessageService } from 'src/message/message.service';
 import { UsePipes, ValidationPipe } from '@nestjs/common';
+import { PrismaService } from 'src/prisma.service';
 
 @WebSocketGateway({
   cors: {
@@ -23,6 +24,7 @@ export class EventsGateway implements OnGatewayConnection {
   constructor(
     private readonly conversationService: ConversationService,
     private readonly messageService: MessageService,
+    private readonly prisma: PrismaService,
   ) {}
 
   @WebSocketServer()
@@ -75,12 +77,46 @@ export class EventsGateway implements OnGatewayConnection {
     this.messageService.createMessage(data).then((message) => {
       this.server.to(message.conversationId).emit('new-message', [message]);
       message.conversation.userOnConversation.forEach(async (item) => {
-        this.server
-          .to(item.userId)
-          .emit(
-            'update-conversations-list',
-            await this.conversationService.findAllConversation(item.userId),
-          );
+        // Check if room exists
+        if (this.server.sockets.adapter.rooms.get(item.userId)) {
+          this.server
+            .to(item.userId)
+            .emit(
+              'update-conversations-list',
+              await this.conversationService.findAllConversation(item.userId),
+            );
+        }
+
+        // Only the other user will receive the notification, not the sender
+        if (item.userId !== message.userId) {
+          const pushTokens = await this.prisma.pushToken.findMany({
+            where: { userId: item.userId },
+            select: { token: true },
+          });
+
+          pushTokens.forEach(({ token }) => {
+            const body = {
+              to: token,
+              sound: 'default',
+              title: message.user.name,
+              body:
+                message.type === 'image'
+                  ? 'Sent you an image'
+                  : message.content,
+              // data: { someData: 'goes here' },
+            };
+
+            fetch('https://exp.host/--/api/v2/push/send', {
+              method: 'POST',
+              headers: {
+                Accept: 'application/json',
+                'Accept-encoding': 'gzip, deflate',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(body),
+            });
+          });
+        }
       });
     });
   }

@@ -17,6 +17,7 @@ model User {
   picture            String?
   userOnConversation UserOnConversation[]
   messages           Message[]
+  pushTokens         PushToken[]
 }
 
 model Conversation {
@@ -43,4 +44,10 @@ model Message {
   user           User         @relation(references: [id], fields: [userId])
   conversationId String
   conversation   Conversation @relation(references: [id], fields: [conversationId])
+}
+
+model PushToken {
+  token  String @id @map("_id")
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 }

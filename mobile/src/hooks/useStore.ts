@@ -17,5 +17,5 @@ export const useStore = create<Store>((set) => ({
   isModalOpened: false,
   setIsModalOpened: (value) => set({ isModalOpened: value }),
   socket: null,
-  setSocket: (socket: Socket) => set({ socket }),
+  setSocket: (socket) => set({ socket }),
 }));

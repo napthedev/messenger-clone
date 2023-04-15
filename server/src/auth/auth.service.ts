@@ -77,4 +77,12 @@ export class AuthService {
       };
     }
   }
+
+  async addPushToken(token: string, userId: string) {
+    try {
+      await this.prisma.pushToken.findUniqueOrThrow({ where: { token } });
+    } catch (error) {
+      return this.prisma.pushToken.create({ data: { token, userId } });
+    }
+  }
 }

@@ -5,11 +5,15 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Constants from "expo-constants";
+import * as Device from "expo-device";
+import * as Notifications from "expo-notifications";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Button,
+  Platform,
   Text,
   TouchableOpacity,
   View,
@@ -26,6 +30,14 @@ import ImageViewer from "./src/screens/ImageViewer";
 import ProfileScreen from "./src/screens/ProfileScreen";
 import SettingsScreen from "./src/screens/SettingsScreen";
 import axios from "./src/services/axios";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 const Stack = createNativeStackNavigator();
 
@@ -105,6 +117,49 @@ function SocketConnectorContainer() {
 
 function MainNavigation() {
   const { isModalOpened } = useStore();
+
+  async function registerForPushNotificationsAsync() {
+    let token;
+    if (Device.isDevice) {
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== "granted") {
+        Alert.alert("Failed to get push token for push notification!");
+        return;
+      }
+      token = (await Notifications.getExpoPushTokenAsync()).data;
+    } else {
+      Alert.alert("Must use physical device for Push Notifications");
+    }
+
+    if (Platform.OS === "android") {
+      Notifications.setNotificationChannelAsync("default", {
+        name: "default",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: "#FF231F7C",
+      });
+    }
+
+    return token;
+  }
+
+  useEffect(() => {
+    registerForPushNotificationsAsync().then(async (token) => {
+      if (token) {
+        const existingPushToken = await AsyncStorage.getItem("pushToken");
+        if (existingPushToken !== token) {
+          AsyncStorage.setItem("pushToken", token);
+          axios.post(`/auth/add-push-token?token=${token}`);
+        }
+      }
+    });
+  }, []);
 
   return (
     <NavigationContainer

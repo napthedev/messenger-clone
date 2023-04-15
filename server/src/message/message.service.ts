@@ -17,6 +17,7 @@ export class MessageService {
           content: true,
           createdAt: true,
           userId: true,
+          user: { select: { name: true } },
           conversationId: true,
           conversation: {
             select: { userOnConversation: { select: { userId: true } } },
@@ -30,8 +31,8 @@ export class MessageService {
     ]);
     return result;
   }
-  async getMessages(conversationId: string) {
-    return await this.prisma.message.findMany({
+  getMessages(conversationId: string) {
+    return this.prisma.message.findMany({
       where: {
         conversationId,
       },

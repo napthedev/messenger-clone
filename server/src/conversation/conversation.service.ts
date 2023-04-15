@@ -46,8 +46,8 @@ export class ConversationService {
     }
   }
 
-  async findAllConversation(userId: string) {
-    return await this.prisma.conversation.findMany({
+  findAllConversation(userId: string) {
+    return this.prisma.conversation.findMany({
       where: {
         userOnConversation: {
           some: { userId: { equals: userId } },

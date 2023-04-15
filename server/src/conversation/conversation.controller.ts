@@ -7,10 +7,7 @@ export class ConversationController {
   constructor(private readonly service: ConversationService) {}
 
   @Post('/create')
-  async create(@Body() body: UsersToConversationDto, @Request() req) {
-    return await this.service.createConversation([
-      req.user.id,
-      body.otherUserId,
-    ]);
+  create(@Body() body: UsersToConversationDto, @Request() req) {
+    return this.service.createConversation([req.user.id, body.otherUserId]);
   }
 }
