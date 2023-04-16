@@ -8,6 +8,9 @@ jobs:
   build-app:
     runs-on: ubuntu-latest
     env:
+      API_URL: ${{ secrets.API_URL }}
+      FACEBOOK_APP_ID: ${{ secrets.FACEBOOK_APP_ID }}
+      IMGBB_API_KEY: ${{ secrets.IMGBB_API_KEY }}
       EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
     defaults:
       run:
