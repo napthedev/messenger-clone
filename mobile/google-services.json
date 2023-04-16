@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "446983855635",
+    "project_id": "messenger-clone-rn",
+    "storage_bucket": "messenger-clone-rn.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:446983855635:android:4e23f42fa2d88bb84fa9e6",
+        "android_client_info": {
+          "package_name": "com.naptest.messengerclone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "446983855635-07lsm006pj67cmg197a0fto2mqrf6cip.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDonCch4WaLxky-WvgprXlq5jKDTIsSWJE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "446983855635-07lsm006pj67cmg197a0fto2mqrf6cip.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -10,9 +10,6 @@
       },
       "android": {
         "buildType": "apk"
-      },
-      "env": {
-        "GOOGLE_SERVICES_FILE": "./google-services.json"
       }
     }
   },
