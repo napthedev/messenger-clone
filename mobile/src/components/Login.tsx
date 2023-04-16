@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ResponseType } from "expo-auth-session";
+import * as AuthSession from "expo-auth-session";
 import * as Facebook from "expo-auth-session/providers/facebook";
 import Constants from "expo-constants";
 import * as WebBrowser from "expo-web-browser";
@@ -30,6 +31,10 @@ const Login: FC = () => {
     expoClientId: Constants.manifest.extra.facebookAppId,
     responseType: ResponseType.Token,
     scopes: ["email", "public_profile"],
+    redirectUri: AuthSession.makeRedirectUri({
+      scheme: "messclone",
+      useProxy: true,
+    }),
   });
 
   useEffect(() => {
