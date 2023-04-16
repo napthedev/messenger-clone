@@ -29,7 +29,8 @@ module.exports = {
       backgroundColor: "#FFFFFF",
     },
     package: "com.naptest.messengerclone",
-    googleServicesFile: "./google-services.json",
+    // googleServicesFile: "./google-services.json",
+    googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
   },
   plugins: [
     [
