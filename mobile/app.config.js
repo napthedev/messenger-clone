@@ -14,7 +14,7 @@ module.exports = {
   splash: {
     image: "./assets/splash.png",
     resizeMode: "contain",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#000000",
   },
   updates: {
     fallbackToCacheTimeout: 0,
@@ -29,9 +29,6 @@ module.exports = {
       backgroundColor: "#FFFFFF",
     },
     package: "com.naptest.messengerclone",
-  },
-  web: {
-    favicon: "./assets/favicon.png",
   },
   plugins: [
     [
