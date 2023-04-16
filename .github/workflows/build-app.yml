@@ -14,7 +14,6 @@ jobs:
       EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
     defaults:
       run:
-        shell: bash
         working-directory: ./mobile
     steps:
       - uses: actions/checkout@v2
