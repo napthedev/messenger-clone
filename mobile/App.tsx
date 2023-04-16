@@ -30,6 +30,7 @@ import ImageViewer from "./src/screens/ImageViewer";
 import ProfileScreen from "./src/screens/ProfileScreen";
 import SettingsScreen from "./src/screens/SettingsScreen";
 import axios from "./src/services/axios";
+import { StorageKeys } from "./src/utils/async-storage";
 
 Notifications.setNotificationHandler({
   handleNotification: async (data) => {
@@ -37,7 +38,7 @@ Notifications.setNotificationHandler({
       ?.conversationId as string;
 
     const currentConversationId = await AsyncStorage.getItem(
-      "current-conversation-id"
+      StorageKeys.currentConversationId
     );
 
     // Don't show notification if the conversation is active
@@ -116,7 +117,7 @@ function SocketConnectorContainer() {
   useEffect(() => {
     const newSocket = io(Constants.manifest.extra.serverURL, {
       auth: async (cb) => {
-        const token = await AsyncStorage.getItem("token");
+        const token = await AsyncStorage.getItem(StorageKeys.authToken);
         cb({ authorization: `Bearer ${token}` });
       },
     });
@@ -169,9 +170,11 @@ function MainNavigation() {
   useEffect(() => {
     registerForPushNotificationsAsync().then(async (token) => {
       if (token) {
-        const existingPushToken = await AsyncStorage.getItem("pushToken");
+        const existingPushToken = await AsyncStorage.getItem(
+          StorageKeys.pushToken
+        );
         if (existingPushToken !== token) {
-          AsyncStorage.setItem("pushToken", token);
+          AsyncStorage.setItem(StorageKeys.pushToken, token);
           axios.post(`/auth/add-push-token?token=${token}`);
         }
       }

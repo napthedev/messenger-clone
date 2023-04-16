@@ -5,6 +5,7 @@ import { FC, useCallback } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
 import { useStore } from "../hooks/useStore";
+import { StorageKeys } from "../utils/async-storage";
 import { imageProxy } from "../utils/image";
 
 const SettingsScreen: FC = () => {
@@ -18,7 +19,7 @@ const SettingsScreen: FC = () => {
   );
 
   const handleSignOut = async () => {
-    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem(StorageKeys.authToken);
     setUser(null);
   };
 

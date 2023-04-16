@@ -14,6 +14,7 @@ import { Conversations } from "server/src/conversation/conversation.service";
 
 import { NavigationProps } from "../../App";
 import { useStore } from "../hooks/useStore";
+import { StorageKeys } from "../utils/async-storage";
 
 const HomeScreen: FC = () => {
   const navigation = useNavigation<NavigationProps>();
@@ -39,7 +40,7 @@ const HomeScreen: FC = () => {
 
   useEffect(() => {
     if (isFocused) {
-      AsyncStorage.removeItem("current-conversation-id");
+      AsyncStorage.removeItem(StorageKeys.currentConversationId);
     }
   }, [isFocused]);
 

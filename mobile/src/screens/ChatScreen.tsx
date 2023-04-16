@@ -26,6 +26,7 @@ import { UserType } from "server/src/user/user.service";
 import { NavigationProps } from "../../App";
 import CustomImage from "../components/CustomImage";
 import { useStore } from "../hooks/useStore";
+import { StorageKeys } from "../utils/async-storage";
 import { imageProxy, imageProxyPlus } from "../utils/image";
 import { uuid } from "../utils/uuid";
 
@@ -98,7 +99,7 @@ const ChatScreen: FC = () => {
   }, [socket, conversationId]);
 
   useEffect(() => {
-    AsyncStorage.setItem("current-conversation-id", conversationId);
+    AsyncStorage.setItem(StorageKeys.currentConversationId, conversationId);
   }, [conversationId]);
 
   useEffect(() => {

@@ -15,6 +15,7 @@ import {
 
 import { useStore } from "../hooks/useStore";
 import axios from "../services/axios";
+import { StorageKeys } from "../utils/async-storage";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -39,7 +40,7 @@ const Login: FC = () => {
         .post("/auth/login-or-register", { token: accessToken })
         .then(async (res) => {
           const jwtToken = res.data.token;
-          await AsyncStorage.setItem("token", jwtToken);
+          await AsyncStorage.setItem(StorageKeys.authToken, jwtToken);
           const { user } = (await axios.get("/auth/verify-token")).data;
           setUser(user);
         })
