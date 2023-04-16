@@ -44,5 +44,8 @@ module.exports = {
     serverURL: process.env.API_URL || "http://localhost:3000",
     facebookAppId: process.env.FACEBOOK_APP_ID,
     imgbbAPIKey: process.env.IMGBB_API_KEY,
+    eas: {
+      projectId: process.env.EAS_PROJECT_ID,
+    },
   },
 };
