@@ -74,7 +74,7 @@ const Login: FC = () => {
           className={`w-full mt-[40px] bg-primary rounded-md h-12 flex-row items-center ${
             isLoggingIn || !request ? "opacity-80" : ""
           }`}
-          onPress={() => promptAsync()}
+          onPress={() => promptAsync({ useProxy: true })}
           disabled={isLoggingIn || !request}
         >
           {isLoggingIn ? (
