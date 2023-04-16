@@ -1,4 +1,6 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
+import { useIsFocused } from "@react-navigation/native";
 import { FlashList } from "@shopify/flash-list";
 import { FC, useEffect, useState } from "react";
 import {
@@ -32,6 +34,14 @@ const HomeScreen: FC = () => {
 
     socket.on("error-conversations-list", () => setIsError(true));
   }, [socket]);
+
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (isFocused) {
+      AsyncStorage.removeItem("current-conversation-id");
+    }
+  }, [isFocused]);
 
   if (isError)
     return (

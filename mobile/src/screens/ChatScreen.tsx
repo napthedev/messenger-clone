@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { FlashList } from "@shopify/flash-list";
 import Constants from "expo-constants";
@@ -95,6 +96,10 @@ const ChatScreen: FC = () => {
       socket.off("new-message");
     };
   }, [socket, conversationId]);
+
+  useEffect(() => {
+    AsyncStorage.setItem("current-conversation-id", conversationId);
+  }, [conversationId]);
 
   useEffect(() => {
     navigation.setOptions({

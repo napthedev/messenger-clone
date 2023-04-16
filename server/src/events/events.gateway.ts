@@ -103,7 +103,7 @@ export class EventsGateway implements OnGatewayConnection {
                 message.type === 'image'
                   ? 'Sent you an image'
                   : message.content,
-              // data: { someData: 'goes here' },
+              data: { message },
             };
 
             fetch('https://exp.host/--/api/v2/push/send', {

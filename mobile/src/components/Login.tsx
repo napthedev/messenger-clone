@@ -13,8 +13,8 @@ import {
   View,
 } from "react-native";
 
-import axios from "../services/axios";
 import { useStore } from "../hooks/useStore";
+import axios from "../services/axios";
 
 WebBrowser.maybeCompleteAuthSession();
 

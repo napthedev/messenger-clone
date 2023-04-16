@@ -32,11 +32,28 @@ import SettingsScreen from "./src/screens/SettingsScreen";
 import axios from "./src/services/axios";
 
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
+  handleNotification: async (data) => {
+    const conversationId = (data as any).request.content.data?.message
+      ?.conversationId as string;
+
+    const currentConversationId = await AsyncStorage.getItem(
+      "current-conversation-id"
+    );
+
+    // Don't show notification if the conversation is active
+    if (conversationId === currentConversationId)
+      return {
+        shouldShowAlert: false,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+      };
+
+    return {
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    };
+  },
 });
 
 const Stack = createNativeStackNavigator();

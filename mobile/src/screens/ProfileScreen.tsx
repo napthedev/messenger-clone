@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { FC } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Linking,
   ScrollView,
@@ -56,14 +55,13 @@ const ProfileScreen: FC = () => {
       <View className="gap-2 items-center">
         <TouchableOpacity
           onPress={async () => {
-            const url = `https://facebook.com/${data.id}`;
-            const supported = await Linking.canOpenURL(url);
-
-            if (supported) {
-              await Linking.openURL(url);
-            } else {
-              Alert.alert(`Don't know how to open this URL: ${url}`);
-            }
+            Linking.canOpenURL(`fb://profile/${data.id}`).then((supported) => {
+              if (supported) {
+                Linking.openURL(`fb://profile/${data.id}`);
+              } else {
+                Linking.openURL(`https://www.facebook.com/${data.id}`);
+              }
+            });
           }}
           className="p-[7px] rounded-full bg-dark-lightened"
         >
