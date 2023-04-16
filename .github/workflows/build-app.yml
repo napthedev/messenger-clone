@@ -38,6 +38,13 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Write google-services.json file
+        uses: "DamianReeves/write-file-action@master"
+        with:
+          path: ./mobile/google-services.json
+          write-mode: overwrite
+          contents: ${{ secrets.GOOGLE_SERVICES }}
+
       - name: Build android
         run: eas build -p android --profile preview --local --non-interactive --output "messenger-clone.apk"
 

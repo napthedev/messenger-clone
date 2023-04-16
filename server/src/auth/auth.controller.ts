@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Request } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginOrRegisterDto } from './dto/login-or-register.dto';
 
@@ -17,7 +17,11 @@ export class AuthController {
   }
 
   @Post('add-push-token')
-  addPushToken(@Query('token') token: string, @Request() req) {
-    return this.auth.addPushToken(token, req.user.id);
+  addPushToken(@Body('token') token: string, @Request() req) {
+    if (token) {
+      return this.auth.addPushToken(token, req.user.id);
+    } else {
+      console.log(token);
+    }
   }
 }

@@ -147,7 +147,7 @@ function MainNavigation() {
         finalStatus = status;
       }
       if (finalStatus !== "granted") {
-        Alert.alert("Failed to get push token for push notification!");
+        // Alert.alert("Failed to get push token for push notification!");
         return;
       }
       token = (await Notifications.getExpoPushTokenAsync()).data;
@@ -169,9 +169,7 @@ function MainNavigation() {
 
   useEffect(() => {
     registerForPushNotificationsAsync().then((token) => {
-      if (token) {
-        axios.post(`/auth/add-push-token?token=${token}`);
-      }
+      axios.post("/auth/add-push-token", { token });
     });
   }, []);
 

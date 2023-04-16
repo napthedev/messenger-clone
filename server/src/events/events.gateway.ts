@@ -114,6 +114,8 @@ export class EventsGateway implements OnGatewayConnection {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify(body),
+            }).catch(() => {
+              // Do nothing
             });
           });
         }

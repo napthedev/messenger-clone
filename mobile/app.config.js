@@ -21,6 +21,7 @@ module.exports = {
   assetBundlePatterns: ["**/*"],
   ios: {
     supportsTablet: true,
+    bundleIdentifier: "com.naptest.messengerclone",
   },
   android: {
     adaptiveIcon: {
@@ -28,6 +29,7 @@ module.exports = {
       backgroundColor: "#FFFFFF",
     },
     package: "com.naptest.messengerclone",
+    googleServicesFile: "./google-services.json",
   },
   plugins: [
     [
