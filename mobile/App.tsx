@@ -168,15 +168,9 @@ function MainNavigation() {
   }
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then(async (token) => {
+    registerForPushNotificationsAsync().then((token) => {
       if (token) {
-        const existingPushToken = await AsyncStorage.getItem(
-          StorageKeys.pushToken
-        );
-        if (existingPushToken !== token) {
-          AsyncStorage.setItem(StorageKeys.pushToken, token);
-          axios.post(`/auth/add-push-token?token=${token}`);
-        }
+        axios.post(`/auth/add-push-token?token=${token}`);
       }
     });
   }, []);
