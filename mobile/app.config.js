@@ -1,5 +1,7 @@
 import "dotenv/config";
 
+console.log("GOOGLE_SERVICES_JSON", process.env.GOOGLE_SERVICES_JSON);
+
 module.exports = {
   name: "Messenger Clone",
   slug: "messenger-clone",
