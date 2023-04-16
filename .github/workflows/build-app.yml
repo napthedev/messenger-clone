@@ -41,7 +41,7 @@ jobs:
       - name: Write google-services.json file
         uses: "DamianReeves/write-file-action@master"
         with:
-          path: ./mobile/google-services.json
+          path: ${{ vars.GITHUB_WORKSPACE }}/mobile/google-services.json
           write-mode: overwrite
           contents: ${{ secrets.GOOGLE_SERVICES }}
 
