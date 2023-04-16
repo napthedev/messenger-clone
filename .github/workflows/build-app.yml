@@ -39,7 +39,7 @@ jobs:
         run: npm install
 
       - name: Build android
-        run: eas build -p android --profile preview --local --output "messenger-clone.apk"
+        run: eas build -p android --profile preview --local -non-interactive --output "messenger-clone.apk"
 
       - uses: actions/upload-artifact@v3
         with:
