@@ -170,7 +170,9 @@ function MainNavigation() {
   useEffect(() => {
     registerForPushNotificationsAsync()
       .then((token) => {
-        axios.post("/auth/add-push-token", { token });
+        if (token) {
+          axios.post("/auth/add-push-token", { token });
+        }
       })
       .catch((error) => {
         axios.post("/report-error", { error, errorString: String(error) });

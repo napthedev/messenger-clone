@@ -20,8 +20,6 @@ export class AuthController {
   addPushToken(@Body('token') token: string, @Request() req) {
     if (token) {
       return this.auth.addPushToken(token, req.user.id);
-    } else {
-      console.log(token);
     }
   }
 }
