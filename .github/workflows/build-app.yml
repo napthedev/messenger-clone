@@ -23,7 +23,8 @@ jobs:
         with:
           node-version: 18.x
 
-      - uses: actions/setup-java@v3
+      - name: Setup Java
+        uses: actions/setup-java@v3
         with:
           distribution: "oracle"
           java-version: "17"
@@ -41,7 +42,27 @@ jobs:
       - name: Build android
         run: eas build -p android --profile preview --local --non-interactive --output "messenger-clone.apk"
 
-      - uses: actions/upload-artifact@v3
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
         with:
           name: build-output
           path: ./mobile/messenger-clone.apk
+
+      - name: Create release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        id: create_release
+        with:
+          repo_token: "${{ github.token }}"
+          automatic_release_tag: "latest"
+          prerelease: false
+          title: "Latest build"
+
+      - name: Upload artifact to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./mobile/messenger-clone.apk
+          asset_name: messenger-clone.apk
+          asset_content_type: application/vnd.android.package-archive
