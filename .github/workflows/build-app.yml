@@ -37,7 +37,8 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
-        run: npm install
+        run: yarn install
+        working-directory: ./
 
       - name: Build android
         run: eas build -p android --profile preview --local --non-interactive --output "messenger-clone.apk"
